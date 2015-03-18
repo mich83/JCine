@@ -5,6 +5,19 @@
  */
 package jcine;
 
+import java.awt.Color;
+import java.awt.Component;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.util.HashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import org.json.simple.parser.ParseException;
+
 /**
  *
  * @author Michael
@@ -30,6 +43,7 @@ public class CineForm extends javax.swing.JFrame {
         jLabel1 = new javax.swing.JLabel();
         tEntryPoint = new javax.swing.JTextField();
         bLoad = new javax.swing.JButton();
+        pHall = new javax.swing.JPanel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -39,6 +53,22 @@ public class CineForm extends javax.swing.JFrame {
         tEntryPoint.setToolTipText("");
 
         bLoad.setText("Cargar");
+        bLoad.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                bLoadActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout pHallLayout = new javax.swing.GroupLayout(pHall);
+        pHall.setLayout(pHallLayout);
+        pHallLayout.setHorizontalGroup(
+            pHallLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 0, Short.MAX_VALUE)
+        );
+        pHallLayout.setVerticalGroup(
+            pHallLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 568, Short.MAX_VALUE)
+        );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -51,7 +81,10 @@ public class CineForm extends javax.swing.JFrame {
                 .addComponent(tEntryPoint, javax.swing.GroupLayout.PREFERRED_SIZE, 507, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(bLoad)
-                .addContainerGap(224, Short.MAX_VALUE))
+                .addContainerGap(307, Short.MAX_VALUE))
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(pHall, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -61,12 +94,102 @@ public class CineForm extends javax.swing.JFrame {
                     .addComponent(jLabel1)
                     .addComponent(tEntryPoint, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(bLoad))
-                .addContainerGap(560, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(pHall, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    private void bLoadActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bLoadActionPerformed
+        try {
+            // TODO add your handling code here:
+            AsientosClient client = new AsientosClient(tEntryPoint.getText());
+            Asiento[] asientos = client.getAsientos();
+            clearHall();
+            buildHall(asientos);
+        } catch (MalformedURLException ex) {
+            JOptionPane.showMessageDialog(this, "Dirección de servicio está incorrecta!");
+        } catch (IOException ex) {
+            JOptionPane.showMessageDialog(this, "No se puede conectarse al servidor!");
+        } catch (ParseException ex) {
+            JOptionPane.showMessageDialog(this, "La respuesta del servidor está incorrecta!");
+        }// catch (Exception ex)
+      //  {
+     //       JOptionPane.showMessageDialog(this, "Error desconocido");
+      //  }
+
+    }//GEN-LAST:event_bLoadActionPerformed
+
+    
+    private void clearHall()
+    {
+        Component[] children = pHall.getComponents();
+        for (int i=0; i<children.length; i++)
+        {
+            pHall.remove(children[i]);
+        }
+    }
+    
+    private void chairPressed(java.awt.event.ActionEvent evt)
+    {
+        
+    }
+    
+    private void buildHall(Asiento[] asientos)
+    {
+        if (this.chairs == null)
+        {
+            this.chairs = new HashMap();
+        }
+        //Encontraremos las dimensiones de sala
+        Integer maxX = 0;
+        Integer maxY = 0;
+        for (int i=0;i<asientos.length; i++)
+        {
+            if (asientos[i].getPosX() > maxX ) {maxX = asientos[i].getPosX();}
+            if (asientos[i].getPosY() > maxY ) {maxY = asientos[i].getPosY();}
+        }
+        //los tamaños de sillas
+        Integer sizeX = pHall.getWidth() / maxX;
+        Integer sizeY = pHall.getHeight()/ maxY;
+        
+        Boolean[][] matrix = new Boolean[maxX][maxY];
+        
+        
+        
+        for (int i=0; i<asientos.length; i++)
+        {
+            JButton btn = new JButton("btn_"+Integer.toString(i));
+            btn.setText(asientos[i].getName());
+            btn.setLocation(sizeX*(asientos[i].getPosX()-1), sizeY*(asientos[i].getPosY()-1));
+            btn.setSize(sizeX-5, sizeY-5);
+            btn.addActionListener(new java.awt.event.ActionListener() {
+                public void actionPerformed(java.awt.event.ActionEvent evt) {
+                    chairPressed(evt);
+                }
+            });
+            matrix[asientos[i].getPosX()-1][asientos[i].getPosY()-1] = true;
+            pHall.add(btn);
+        }
+        
+        for (int x=0; x<maxX; x++  )
+        {
+            for (int y=0; y<maxY; y++)
+            {
+                if (matrix[x][y] == null)
+                {
+                    JPanel panel = new JPanel();
+                    panel.setBackground(Color.cyan);
+                    panel.setLocation(x*sizeX-5,y*sizeY-5);
+                    panel.setSize(sizeX+10, sizeY+10);
+                    pHall.add(panel);
+                }
+            }
+        }
+        pHall.repaint();
+    }
     /**
      * @param args the command line arguments
      */
@@ -105,6 +228,9 @@ public class CineForm extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton bLoad;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JPanel pHall;
     private javax.swing.JTextField tEntryPoint;
     // End of variables declaration//GEN-END:variables
+
+    private HashMap chairs;
 }
