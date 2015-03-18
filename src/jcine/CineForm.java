@@ -9,10 +9,6 @@ import java.awt.Color;
 import java.awt.Component;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.util.HashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -24,6 +20,7 @@ import org.json.simple.parser.ParseException;
  */
 public class CineForm extends javax.swing.JFrame {
 
+    
     /**
      * Creates new form CineForm
      */
@@ -115,14 +112,14 @@ public class CineForm extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(this, "No se puede conectarse al servidor!");
         } catch (ParseException ex) {
             JOptionPane.showMessageDialog(this, "La respuesta del servidor está incorrecta!");
-        }// catch (Exception ex)
-      //  {
-     //       JOptionPane.showMessageDialog(this, "Error desconocido");
-      //  }
+        } catch (Exception ex)
+        {
+            JOptionPane.showMessageDialog(this, "Error desconocido");
+        }
 
     }//GEN-LAST:event_bLoadActionPerformed
 
-    
+    //eliminar todas las sillas
     private void clearHall()
     {
         Component[] children = pHall.getComponents();
@@ -132,17 +129,25 @@ public class CineForm extends javax.swing.JFrame {
         }
     }
     
-    private void chairPressed(java.awt.event.ActionEvent evt)
+    void chairPressed(java.awt.event.ActionEvent evt)
     {
-        
+        if (evt.getSource() instanceof JButton)
+        {
+            JButton btn = (JButton) evt.getSource();
+            if (btn.getBackground() == Color.white)
+            {
+                btn.setBackground(null);
+            }
+            else
+            {
+                btn.setBackground(Color.white);
+            }
+        }
     }
     
+    //
     private void buildHall(Asiento[] asientos)
     {
-        if (this.chairs == null)
-        {
-            this.chairs = new HashMap();
-        }
         //Encontraremos las dimensiones de sala
         Integer maxX = 0;
         Integer maxY = 0;
@@ -158,13 +163,13 @@ public class CineForm extends javax.swing.JFrame {
         Boolean[][] matrix = new Boolean[maxX][maxY];
         
         
-        
+        //sillas
         for (int i=0; i<asientos.length; i++)
         {
             JButton btn = new JButton("btn_"+Integer.toString(i));
             btn.setText(asientos[i].getName());
             btn.setLocation(sizeX*(asientos[i].getPosX()-1), sizeY*(asientos[i].getPosY()-1));
-            btn.setSize(sizeX-5, sizeY-5);
+            btn.setSize(sizeX-SPACER, sizeY-SPACER);
             btn.addActionListener(new java.awt.event.ActionListener() {
                 public void actionPerformed(java.awt.event.ActionEvent evt) {
                     chairPressed(evt);
@@ -173,7 +178,7 @@ public class CineForm extends javax.swing.JFrame {
             matrix[asientos[i].getPosX()-1][asientos[i].getPosY()-1] = true;
             pHall.add(btn);
         }
-        
+        //pasillos
         for (int x=0; x<maxX; x++  )
         {
             for (int y=0; y<maxY; y++)
@@ -182,8 +187,8 @@ public class CineForm extends javax.swing.JFrame {
                 {
                     JPanel panel = new JPanel();
                     panel.setBackground(Color.cyan);
-                    panel.setLocation(x*sizeX-5,y*sizeY-5);
-                    panel.setSize(sizeX+10, sizeY+10);
+                    panel.setLocation(x*sizeX-SPACER,y*sizeY-SPACER);
+                    panel.setSize(sizeX+2*SPACER, sizeY+2*SPACER);
                     pHall.add(panel);
                 }
             }
@@ -231,6 +236,5 @@ public class CineForm extends javax.swing.JFrame {
     private javax.swing.JPanel pHall;
     private javax.swing.JTextField tEntryPoint;
     // End of variables declaration//GEN-END:variables
-
-    private HashMap chairs;
+    private static final int SPACER = 5; //Espacio entre sillas
 }
